@@ -1,5 +1,4 @@
 #!/bin/bash
-# filepath: /home/antonio/Documentos/acsenrafilho/research-analysis/unicamp/dc_map_eplepsy/apply_transformations.sh
 
 # Script to apply ANTs transformations to DTI maps
 # This script applies existing native-to-MNI transformations to multiple DTI maps
@@ -31,13 +30,12 @@ if [ -z "$AFFINE_FILES" ]; then
 fi
 
 # Process each subject
+counter=1
 for AFFINE_FILE in $AFFINE_FILES; do
   # Get the directory and subject ID
   DIR=$(dirname "$AFFINE_FILE")
   BASE_NAME=$(basename "$AFFINE_FILE" | sed 's/0GenericAffine.mat//')
-  SUBJECT_ID=$(echo $BASE_NAME | cut -d '_' -f 1)
   
-  echo "Processing subject: $SUBJECT_ID"
   
   # Find the corresponding warp file
   WARP_FILE=$(find $DIR -name "${BASE_NAME}1Warp.nii.gz" | head -n 1)
@@ -47,25 +45,33 @@ for AFFINE_FILE in $AFFINE_FILES; do
     continue
   fi
   
-  echo "  Found transformation files:"
-  echo "    Affine: $(basename "$AFFINE_FILE")"
-  echo "    Warp: $(basename "$WARP_FILE")"
-  
   # Find DTI maps for this subject
   for MAP_TYPE in "dc_q10.nrrd" "md.nrrd" "fa.nrrd"; do
     echo "  Processing $MAP_TYPE map..."
+
+    # Extract subject identifier from filename (the part before _baseline_MNI_)
+    SUBJECT_ID=$(echo "$BASE_NAME" | cut -c1-10)
     
-    # Find the map file
-    MAP_FILE=$(find $DIR -name "*$MAP_TYPE" | head -n 1)
+    # Find the map file in the directory with a more flexible search
+    FILENAME=`ls $DIR | grep -i "${MAP_TYPE}" | grep ${SUBJECT_ID}`
     
-    if [ ! -f "$MAP_FILE" ]; then
-      echo "    Warning: No $MAP_TYPE map found for $SUBJECT_ID, skipping..."
+    if [ -z "$FILENAME" ]; then
+      echo "    Warning: No $MAP_TYPE map found in $DIR, skipping..."
       continue
     fi
+
+    MAP_FILE="$DIR/$FILENAME"
+
+    echo "  Found transformation files:"
+    echo "    Subject ID: $SUBJECT_ID"
+    echo "    Affine: $(basename "$AFFINE_FILE")"
+    echo "    Warp: $(basename "$WARP_FILE")"
+    echo "    Input file: $(basename "$MAP_FILE")"
     
-    # Define output filename
+    # Define output filename with more explicit naming to ensure uniqueness
     MAP_BASENAME=$(basename "$MAP_FILE")
-    OUTPUT_FILE="$DIR/${MAP_BASENAME/.nrrd/_MNI.nrrd}"
+    MAP_TYPE_CLEAN=$(echo $MAP_TYPE | sed 's/\.nrrd//')
+    OUTPUT_FILE="$DIR/${SUBJECT_ID}_${MAP_TYPE_CLEAN}_MNI.nii.gz"
     
     echo "    Transforming: $MAP_BASENAME"
     echo "    Output: $(basename "$OUTPUT_FILE")"
@@ -85,6 +91,8 @@ for AFFINE_FILE in $AFFINE_FILES; do
     else
       echo "    Error: Transformation failed"
     fi
+    
+    ((counter++))
   done
   
   echo "  Subject $SUBJECT_ID processing complete"
