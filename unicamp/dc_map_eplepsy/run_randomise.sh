@@ -30,8 +30,8 @@ echo "Finding subject maps..."
 
 # Find FA maps
 echo "Finding FA maps..."
-PATIENT_FA_FILES=$(find ${PATIENTS_DIR} -type f -name "*FA*.nii*" | sort)
-CONTROL_FA_FILES=$(find ${CONTROLS_DIR} -type f -name "*FA*.nii*" | sort)
+PATIENT_FA_FILES=$(find ${PATIENTS_DIR} -type f -name "*fa_MNI.nii*" | sort)
+CONTROL_FA_FILES=$(find ${CONTROLS_DIR} -type f -name "*fa_MNI.nii*" | sort)
 NUM_PATIENTS_FA=$(echo "$PATIENT_FA_FILES" | wc -l)
 NUM_CONTROLS_FA=$(echo "$CONTROL_FA_FILES" | wc -l)
 echo "Found $NUM_PATIENTS_FA FA maps for patients"
@@ -45,8 +45,8 @@ fi
 
 # Find MD maps
 echo "Finding MD maps..."
-PATIENT_MD_FILES=$(find ${PATIENTS_DIR} -type f -name "*MD*.nii*" | sort)
-CONTROL_MD_FILES=$(find ${CONTROLS_DIR} -type f -name "*MD*.nii*" | sort)
+PATIENT_MD_FILES=$(find ${PATIENTS_DIR} -type f -name "*md_MNI.nii*" | sort)
+CONTROL_MD_FILES=$(find ${CONTROLS_DIR} -type f -name "*md_MNI.nii*" | sort)
 NUM_PATIENTS_MD=$(echo "$PATIENT_MD_FILES" | wc -l)
 NUM_CONTROLS_MD=$(echo "$CONTROL_MD_FILES" | wc -l)
 echo "Found $NUM_PATIENTS_MD MD maps for patients"
@@ -60,8 +60,8 @@ fi
 
 # Find DC maps
 echo "Finding DC maps..."
-PATIENT_DC_FILES=$(find ${PATIENTS_DIR} -type f -name "*DC*.nii*" | sort)
-CONTROL_DC_FILES=$(find ${CONTROLS_DIR} -type f -name "*DC*.nii*" | sort)
+PATIENT_DC_FILES=$(find ${PATIENTS_DIR} -type f -name "*dc_q10_MNI.nii*" | sort)
+CONTROL_DC_FILES=$(find ${CONTROLS_DIR} -type f -name "*dc_q10_MNI.nii*" | sort)
 NUM_PATIENTS_DC=$(echo "$PATIENT_DC_FILES" | wc -l)
 NUM_CONTROLS_DC=$(echo "$CONTROL_DC_FILES" | wc -l)
 echo "Found $NUM_PATIENTS_DC DC maps for patients"
@@ -194,26 +194,23 @@ randomise -i temp_data/all_subjects_FA.nii.gz \
           -d design/design_FA.mat \
           -t design/design.con \
           -n $NPERM \
-          -T \
-          -V
+          -T &
 
-echo "Running randomise for MD maps..."
 randomise -i temp_data/all_subjects_MD.nii.gz \
           -o results/MD/md_patients_vs_controls \
           -d design/design_MD.mat \
           -t design/design.con \
           -n $NPERM \
-          -T \
-          -V
+          -T &
 
-echo "Running randomise for DC maps..."
 randomise -i temp_data/all_subjects_DC.nii.gz \
           -o results/DC/dc_patients_vs_controls \
           -d design/design_DC.mat \
           -t design/design.con \
           -n $NPERM \
-          -T \
-          -V
+          -T &
+
+wait
 
 echo "All randomise analyses completed!"
 echo "Results are organized in the results directory:"
