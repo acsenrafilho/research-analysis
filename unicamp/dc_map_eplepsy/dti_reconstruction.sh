@@ -23,47 +23,61 @@ fi
 CURRENT_DIR=$(pwd)
 
 # Step 2: Process each DWI file
-for DWI_FILE in `find "$ROOT_FOLDER" -type f -name "*${DWI_FILE_SUFFIX}"`; do
+for DWI_FILE in `ls $ROOT_FOLDER | grep ${DWI_FILE_SUFFIX} | grep .nii | grep -v TORTOISE | grep -v _ADC`; do
     SUBJECT_DIR=$(dirname "$DWI_FILE")
     SUBJECT_ID=$(basename "$SUBJECT_DIR")
-    echo "Processing subject: $SUBJECT_ID"
-    
+    SUBJECT_NAME=$(basename "${DWI_FILE%.*}")
+    echo "Processing subject: $SUBJECT_NAME (ID: $SUBJECT_ID)"
+    echo "DWI file: $DWI_FILE"
+
+    # echo "Executing DWI preprocessing (Gibbs, inter-volume motion and eddy currents correction)"
+    # TORTOISEProcess --up_data ${DWI_FILE} --denoising for_final
+
+    DWI_FILE=`ls ${SUBJECT_DIR} | grep ${SUBJECT_NAME%.*} | grep TORTOISE | grep .nii`
+    echo $DWI_FILE
+    echo "APPLYING FSL PROCESSING"
+    echo "Creating brain mask for $DWI_FILE"
+    bet "$DWI_FILE" "${SUBJECT_DIR}/${SUBJECT_NAME}_dwi_brain" -m -n
+
+    echo "Fitting diffusion tensor model for $DWI_FILE"
+    dtifit --data=${DWI_FILE} \
+    --out=${SUBJECT_DIR}/dti \
+    --mask=${SUBJECT_DIR}/${SUBJECT_NAME}_dwi_brain_mask.nii.gz \
+    --bvecs=${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bvec` \
+    --bvals=${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bval`
+
+    echo "APPLYING DC PROCESSING"
+    echo "Calculating Diffusion Complexity (DC) maps"
     echo "Executing FSL data to NRRD conversion"
     cd "$SLICER_FOLDER"
     ./Slicer --launch DWIConvert --conversionMode FSLToNrrd \
     --outputVolume ${SUBJECT_DIR}/dwi.nrrd  \
     --fslNIFTIFile ${DWI_FILE} \
-    --inputBValues ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bval` \
-    --inputBVectors ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bvec` \
+    --inputBValues ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep TORTOISE | grep .bval` \
+    --inputBVectors ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep TORTOISE | grep .bvec` \
     --allowLossyConversion
 
-    echo "Creating brain mask for $DWI_FILE"
     ./Slicer --launch DiffusionWeightedVolumeMasking --removeislands \
     ${SUBJECT_DIR}/dwi.nrrd \
     ${SUBJECT_DIR}/dwi_baseline.nrrd \
     ${SUBJECT_DIR}/dwi_brain_mask.nrrd
-    # bet "$DWI_FILE" "${SUBJECT_DIR}/dwi_brain" -m -n
 
-    echo "Fitting diffusion tensor model for $DWI_FILE"
-    ./Slicer --launch DWIToDTIEstimation \
-    --mask ${SUBJECT_DIR}/dwi_brain_mask.nrrd \
-    --enumeration LS \
-    ${SUBJECT_DIR}/dwi.nrrd \
-    ${SUBJECT_DIR}/dti.nrrd \
-    ${SUBJECT_DIR}/dwi_baseline.nrrd
-    # dtifit --data=${DWI_FILE} \
-    # --out=${SUBJECT_DIR}/dti \
-    # --mask=${SUBJECT_DIR}/dwi_brain_mask.nii.gz \
-    # --bvecs=${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bvec` \
-    # --bvals=${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep .bval`
+    # echo "Fitting diffusion tensor model for $DWI_FILE"
+    # ./Slicer --launch DWIToDTIEstimation \
+    # --mask ${SUBJECT_DIR}/dwi_brain_mask.nrrd \
+    # --enumeration LS \
+    # ${SUBJECT_DIR}/dwi.nrrd \
+    # ${SUBJECT_DIR}/dti.nrrd \
+    # ${SUBJECT_DIR}/dwi_baseline.nrrd
+    
 
-    ./Slicer --launch  DiffusionTensorScalarMeasurements --enumeration FractionalAnisotropy \
-    ${SUBJECT_DIR}/dti.nrrd \
-    ${SUBJECT_DIR}/dti_FA.nrrd
+    # ./Slicer --launch  DiffusionTensorScalarMeasurements --enumeration FractionalAnisotropy \
+    # ${SUBJECT_DIR}/dti.nrrd \
+    # ${SUBJECT_DIR}/dti_FA.nrrd
 
-    ./Slicer --launch  DiffusionTensorScalarMeasurements --enumeration MeanDiffusivity \
-    ${SUBJECT_DIR}/dti.nrrd \
-    ${SUBJECT_DIR}/dti_MD.nrrd
+    # ./Slicer --launch  DiffusionTensorScalarMeasurements --enumeration MeanDiffusivity \
+    # ${SUBJECT_DIR}/dti.nrrd \
+    # ${SUBJECT_DIR}/dti_MD.nrrd
 
     echo "Calculate Diffusion Complexity (DC) maps"
     cd "$DC_FOLDER"
@@ -79,4 +93,5 @@ for DWI_FILE in `find "$ROOT_FOLDER" -type f -name "*${DWI_FILE_SUFFIX}"`; do
     echo "Done..."
     echo ""
     echo ""
+    exit 0
 done
