@@ -85,7 +85,7 @@ ${SUBJECT_DIR}/${SUBJECT_NAME}_dti_DC.nrrd \
 cd "$CURRENT_DIR"
 ````
 
-
+TODO: FAZER A SEGMENTAÇÃO DE T1 COM A IMAGEM FILLED (PLES) E ADOTAR SEGMENTAÇÃO CLASSICA WM+GM+CSF
 4. Segmentação T1
    - Utilizar FSL para fazer brain_mask em T1
    - Fazer segmentação com FAST
@@ -119,6 +119,7 @@ antsRegistrationSyNQuick.sh \
   -n 8
 ```
 
+TODO: O LABEL STATISTICA AQUI SE REFERE A LESAO E NAWM
 1. Extração de valores médios nas ROIs do hipocampo
    - Utilizar fslstats para extrair os valores médios dos mapas DTI e DC nas ROIs segmentadas do hipocampo
  - Nesta etapa será executado o arquivo: `label_statistics.sh`
