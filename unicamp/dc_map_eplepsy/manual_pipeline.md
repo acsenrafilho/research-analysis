@@ -50,7 +50,7 @@ dtifit --data=${DWI_FILE} \
 CURRENT_DIR=$(pwd)
 SUBJECT_DIR=$(dirname "$DWI_FILE")
 SUBJECT_NAME=$(basename "${DWI_FILE%.*}")
-SLICER_FOLDER="/home/antonio/Documentos/Slicer-5.9.0-2025-09-18-linux-amd64"
+SLICER_FOLDER="/home/antonio/Documents/Tools/Slicer-5.11.0-2026-05-11-linux-amd64"
 DC_FOLDER="/home/antonio/Documentos/csim/ITK-build/DiffusionComplexityMapping"
 
 # Garante que SUBJECT_DIR seja caminho absoluto
