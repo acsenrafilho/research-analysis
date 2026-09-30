@@ -1,6 +1,7 @@
 # Keep all imaging data and generated outputs outside the Git repo.
 # This project should only version code, scripts, and documentation.
 
+.venv/
 data/
 results/
 processed/
