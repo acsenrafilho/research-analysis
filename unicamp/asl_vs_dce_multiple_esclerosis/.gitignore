@@ -1,0 +1,22 @@
+# Keep all imaging data and generated outputs outside the Git repo.
+# This project should only version code, scripts, and documentation.
+
+data/
+results/
+processed/
+*.nii
+*.nii.gz
+*.img
+*.mgz
+*.dcm
+*.zip
+*.nrrd
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.csv
+*.json
+
+# Local analysis directories
+analysis/

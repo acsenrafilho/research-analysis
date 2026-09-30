@@ -1,0 +1,22 @@
+study:
+  name: "asl_vs_dce_multiple_esclerosis"
+  scope:
+    - "t1"
+    - "tex"
+    - "dce"
+  excluded:
+    - "pcasl"
+
+paths:
+  root: "."
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  qc_data: "data/qc"
+  results: "results"
+  scripts: "scripts"
+
+processing:
+  reference_space: "t1"
+  dce_stage_raw: true
+  qc_required: true
+  standardize_names: true
