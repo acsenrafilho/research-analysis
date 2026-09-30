@@ -50,8 +50,8 @@ dtifit --data=${DWI_FILE} \
 CURRENT_DIR=$(pwd)
 SUBJECT_DIR=$(dirname "$DWI_FILE")
 SUBJECT_NAME=$(basename "${DWI_FILE%.*}")
-SLICER_FOLDER="/home/antonio/Documentos/Slicer-5.9.0-2025-09-18-linux-amd64"
-DC_FOLDER="/home/antonio/Documentos/csim/ITK-build/DiffusionComplexityMapping"
+SLICER_FOLDER="/home/antonio/Documents/Slicer-5.9.0-2025-09-08-linux-amd64"
+DC_FOLDER="/home/antonio/Documents/Github-Projects/ITK-build/DiffusionComplexityMapping-build"
 
 # Garante que SUBJECT_DIR seja caminho absoluto
 SUBJECT_DIR=$(realpath "$SUBJECT_DIR")
@@ -59,7 +59,7 @@ SUBJECT_DIR=$(realpath "$SUBJECT_DIR")
 cd "$SLICER_FOLDER"
 ./Slicer --launch DWIConvert --conversionMode FSLToNrrd \
 --outputVolume ${SUBJECT_DIR}/${SUBJECT_NAME}_dwi.nrrd  \
---fslNIFTIFile ${SUBJECT_DIR}/${DWI_FILE} \
+--fslNIFTIFile ${DWI_FILE} \
 --inputBValues ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep ${SUBJECT_NAME} | grep TORTOISE | grep .bval` \
 --inputBVectors ${SUBJECT_DIR}/`ls ${SUBJECT_DIR} | grep ${SUBJECT_NAME} | grep TORTOISE | grep .bvec` \
 --allowLossyConversion
@@ -95,10 +95,10 @@ TODO: FAZER A SEGMENTAÇÃO DE T1 COM A IMAGEM FILLED (PLES) E ADOTAR SEGMENTAÇ
 SUBJECT_DIR=$(dirname "$T1_FILE")
 SUBJECT_NAME=$(basename "${T1_FILE%.*}")
 echo "Brain extraction for ${T1_FILE}"
-bet ${T1_FILE} ${SUBJECT_DIR}/${SUBJECT_NAME}_t1_brain -m
+bet ${T1_FILE} ${SUBJECT_DIR}/${SUBJECT_NAME}_t1_brain -m -R -S -B
 
 echo "Tissue segmentation for ${T1_FILE}"
-run_first_all -i ${SUBJECT_DIR}/${SUBJECT_NAME}_t1_brain.nii.gz -o ${SUBJECT_DIR}/${SUBJECT_NAME}_t1_brain -b
+fast -g ${SUBJECT_DIR}/${SUBJECT_NAME}_t1_brain.nii.gz
 ```
 
 5. Registro dos mapas DTI e DC para T1
